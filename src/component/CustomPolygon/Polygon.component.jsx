@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import mapboxgl, {Map, NavigationControl} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MAPBOX_KEY } from '../../settings';
+import { Button } from '@chakra-ui/react';
 
 const Polygon = () => {
   const mapContainerRef = useRef();
@@ -29,6 +30,16 @@ const Polygon = () => {
       <div ref={mapContainerRef} style={{ height: '80%', width: '100%' }}></div>
      <div>
         Button functionality goes here
+
+        <div>
+            <Button>
+                Save
+            </Button>
+        </div>
+        <div>
+            Title:
+        
+        </div>
         
      </div>
      </div>
