@@ -15,4 +15,11 @@ Currently, two official plugins are available:
 Initial React Setup using Vite
 Installing required dependencies
 Creating a component called polygon which integrates the Map from MapBox
+Creating a polygon on the MapBox
+
 Installing Chakra-ui for the UI library, specially for buttons. ( Note: the reason I am using this is because I have not used Chakra-ui so wanted to give a try.)
+
+
+
+
+
