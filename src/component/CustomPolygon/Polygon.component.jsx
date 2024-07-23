@@ -22,7 +22,6 @@ const Polygon = () => {
   const [selectedPolygon, setSelectedPolygon] = useState(null);
     const [roundedArea, setRoundedArea] = useState();
     const [polygonAreaName, setPolygonAreaName] = useState('')
-      const [isEditing, setIsEditing] = useState(false); // enable editing
 
     const [clearAlert, setClearAlert] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
@@ -31,6 +30,7 @@ const Polygon = () => {
 
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
+    // clear extra texts or anythings
 
     mapRef.current = new Map({
       container: mapContainerRef.current,
@@ -118,14 +118,17 @@ drawRef.current = draw // this is to add the in drawRef
     const handleClearPolygon = () =>{
         console.log("clear polygon")
         drawRef.current.deleteAll();
+        drawRef.current.changeMode('draw_polygon');
         setClearAlert(true)
     }
     const handleEditPolygon =() => {
         console.log('handle edit', selectedPolygon)
-        if(!selectedPolygon) {
+        // todo: revisit this logic
+        if(selectedPolygon) {
             console.log("hello")
             setErrorMessage('Please select Polygon to edit.')
         }
+        drawRef.current.changeMode('direct_select', { featureId: polygons[selectedPolygon].feature.id }); // only direct select
     }
 
     const handleShowPolygon = (index) =>{
@@ -163,7 +166,6 @@ drawRef.current = draw // this is to add the in drawRef
             setSelectedPolygon(null)
             setPolygonAreaName('')
             setErrorMessage('')
-            setIsEditing(false)
             drawRef.current.deleteAll()
             onClose();
 
@@ -228,7 +230,7 @@ drawRef.current = draw // this is to add the in drawRef
   <OrderedList style={{ margin: 0, padding: 0, listStylePosition: 'inside' }}>
             {polygons.map((polygon, index) => (
           <ListItem key={index} onClick={() => handleShowPolygon(index)}>
-            {polygon.name}
+            {polygon.name} - {roundedArea}
           </ListItem>
         ))}
       </OrderedList>
@@ -240,7 +242,7 @@ drawRef.current = draw // this is to add the in drawRef
           <ModalHeader>Confirm Edit</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            Are you sure you want to edit this polygon "{polygonAreaName}"?
+            Are you sure you want to update this polygon: {polygonAreaName}?
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={handleConfirmUpdatePolygon}>
