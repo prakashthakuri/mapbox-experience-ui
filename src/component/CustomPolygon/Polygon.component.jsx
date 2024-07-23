@@ -17,6 +17,7 @@ const Polygon = () => {
     const [polygonAreaName, setPolygonAreaName] = useState('')
 
     const [clearAlert, setClearAlert] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
 
 
   useEffect(() => {
@@ -87,6 +88,23 @@ drawRef.current = draw // this is to add the in drawRef
 
     const handleSavePolygon = () => {
         console.log("save")
+
+        if(!polygonAreaName) {
+            setErrorMessage('Please enter a valid name for a polygon')
+
+        }
+
+        const data = drawRef.current.getAll();
+        if(data.features.length >0) {
+            const newPolygon = {
+                name: polygonAreaName,
+                feature: data.features[0]
+            }
+            setPolygons([...polygons, newPolygon])
+            setPolygonAreaName('')
+            // drawRef.current.deleteAll() // this could be optional
+        }
+
     }
     const handleClearPolygon = () =>{
         console.log("clear polygon")
@@ -98,6 +116,7 @@ drawRef.current = draw // this is to add the in drawRef
     }
     const handleCloseAlert =() => {
         setClearAlert(false)
+        setErrorMessage('')
     }
 
 
@@ -108,7 +127,7 @@ drawRef.current = draw // this is to add the in drawRef
    
         <Box display='flex' alignItems='center' p ={4}>
             <Text mr={2} >Title:</Text>
-            <Input placeholder='polygon name' />
+            <Input placeholder='polygon name' value={polygonAreaName} onChange={(e) => {setPolygonAreaName(e.target.value); setErrorMessage('')}} />
         
         </Box>
 
@@ -118,6 +137,23 @@ drawRef.current = draw // this is to add the in drawRef
       <Box>
         <AlertDescription>
           Polygon was Cleared
+        </AlertDescription>
+      </Box>
+      <CloseButton
+       position='absolute'
+        top={2}
+        right={2}
+        onClick={handleCloseAlert}
+      />
+    </Alert>
+        }
+
+        {errorMessage && 
+           <Alert status='error'>
+      <AlertIcon />
+      <Box>
+        <AlertDescription>
+            {errorMessage}
         </AlertDescription>
       </Box>
       <CloseButton
