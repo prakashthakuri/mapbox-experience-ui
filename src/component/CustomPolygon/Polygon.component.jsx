@@ -3,7 +3,7 @@ import mapboxgl, {Map} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { MAPBOX_KEY } from '../../settings';
-import { ButtonGroup, Button, Input, Box, Text, Alert, AlertIcon, CloseButton, AlertDescription } from '@chakra-ui/react';
+import { ButtonGroup, Button, Input, Box, Text, Alert, AlertIcon, CloseButton, AlertDescription, OrderedList, ListItem } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 
@@ -111,21 +111,30 @@ drawRef.current = draw // this is to add the in drawRef
         drawRef.current.deleteAll();
         setClearAlert(true)
     }
-    const handleEditPolygon =() => {
+    const handleEditPolygon =(index) => {
         console.log("handle Edit Polygon")
+        setSelectedPolygon(index)
+        const selectedFeature = polygons[index].feature;
+        drawRef.current.deleteAll()
+        drawRef.current.add(selectedFeature)
+         drawRef.current.changeMode('direct_select', { featureId: selectedFeature.id });
+        setPolygonAreaName(polygons[index].name)
+        setErrorMessage('')
     }
     const handleCloseAlert =() => {
         setClearAlert(false)
         setErrorMessage('')
     }
 
+    const handleUpdatePolygon = () => {
+        console.log('updatePolygon')
+    }
+
 
   return (
     <Box display= 'flex' style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vh' }}>
-      <Box ref={mapContainerRef} style={{ height: '70%', width: '100%' }}></Box>
-     <Box>
-   
-        <Box display='flex' alignItems='center' p ={4}>
+      <Box ref={mapContainerRef} style={{ height: '70%', width: '100%' }}></Box>   
+     <Box display='flex' alignItems='center' p ={4}>
             <Text mr={2} >Title:</Text>
             <Input placeholder='polygon name' value={polygonAreaName} onChange={(e) => {setPolygonAreaName(e.target.value); setErrorMessage('')}} />
         
@@ -166,20 +175,28 @@ drawRef.current = draw // this is to add the in drawRef
         }
 
 
-
-
-
-             <Box p={4}>
+        <Box p={4}>
            <ButtonGroup variant='outline' spacing='6'>
-                <Button colorScheme='blue' onClick={handleSavePolygon}>Save</Button>
+                <Button colorScheme='blue' onClick={selectedPolygon === null ? handleSavePolygon : handleUpdatePolygon}>{selectedPolygon === null ? 'Save': 'Update'}</Button>
                 <Button colorScheme='red' onClick={handleClearPolygon}>Clear</Button>
                 <Button onClick={handleEditPolygon}>Edit</Button>
 
             </ButtonGroup>
         </Box>
+
+        <Box>
+  <OrderedList style={{ margin: 0, padding: 0, listStylePosition: 'inside' }}>
+            {polygons.map((polygon, index) => (
+          <ListItem key={index} onClick={() => handleEditPolygon(index)}>
+            {polygon.name}
+          </ListItem>
+        ))}
+      </OrderedList>
+
+        </Box>   
         
-     </Box>
-     </Box>
+</Box>
+
   );
 };
 
