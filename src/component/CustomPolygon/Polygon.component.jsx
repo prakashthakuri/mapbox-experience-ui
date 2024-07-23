@@ -3,7 +3,7 @@ import mapboxgl, {Map} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { MAPBOX_KEY } from '../../settings';
-import { ButtonGroup, Button, Input, Box, Text } from '@chakra-ui/react';
+import { ButtonGroup, Button, Input, Box, Text, Alert, AlertIcon, CloseButton, AlertDescription } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 
@@ -15,6 +15,8 @@ const Polygon = () => {
   const [selectedPolygon, setSelectedPolygon] = useState(null);
     const [roundedArea, setRoundedArea] = useState();
     const [polygonAreaName, setPolygonAreaName] = useState('')
+
+    const [clearAlert, setClearAlert] = useState(false)
 
 
   useEffect(() => {
@@ -88,11 +90,15 @@ drawRef.current = draw // this is to add the in drawRef
     }
     const handleClearPolygon = () =>{
         console.log("clear polygon")
+        drawRef.current.deleteAll();
+        setClearAlert(true)
     }
     const handleEditPolygon =() => {
         console.log("handle Edit Polygon")
     }
-
+    const handleCloseAlert =() => {
+        setClearAlert(false)
+    }
 
 
   return (
@@ -105,6 +111,25 @@ drawRef.current = draw // this is to add the in drawRef
             <Input placeholder='polygon name' />
         
         </Box>
+
+        {clearAlert &&
+         <Alert status='success'>
+      <AlertIcon />
+      <Box>
+        <AlertDescription>
+          Polygon was Cleared
+        </AlertDescription>
+      </Box>
+      <CloseButton
+       position='absolute'
+        top={2}
+        right={2}
+        onClick={handleCloseAlert}
+      />
+    </Alert>
+        }
+
+
 
 
 
