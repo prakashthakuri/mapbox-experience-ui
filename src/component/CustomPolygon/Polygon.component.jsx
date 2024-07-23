@@ -3,7 +3,14 @@ import mapboxgl, {Map} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { MAPBOX_KEY } from '../../settings';
-import { ButtonGroup, Button, Input, Box, Text, Alert, AlertIcon, CloseButton, AlertDescription, OrderedList, ListItem } from '@chakra-ui/react';
+import { ButtonGroup, Button, Input, Box, Text, Alert, AlertIcon, CloseButton, AlertDescription, OrderedList, ListItem, Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+useDisclosure } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 
@@ -15,9 +22,11 @@ const Polygon = () => {
   const [selectedPolygon, setSelectedPolygon] = useState(null);
     const [roundedArea, setRoundedArea] = useState();
     const [polygonAreaName, setPolygonAreaName] = useState('')
+      const [isEditing, setIsEditing] = useState(false); // enable editing
 
     const [clearAlert, setClearAlert] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
+      const { isOpen, onOpen, onClose } = useDisclosure();
 
 
   useEffect(() => {
@@ -111,15 +120,22 @@ drawRef.current = draw // this is to add the in drawRef
         drawRef.current.deleteAll();
         setClearAlert(true)
     }
-    const handleEditPolygon =(index) => {
-        console.log("handle Edit Polygon")
-        setSelectedPolygon(index)
-        const selectedFeature = polygons[index].feature;
-        drawRef.current.deleteAll()
-        drawRef.current.add(selectedFeature)
-         drawRef.current.changeMode('direct_select', { featureId: selectedFeature.id });
-        setPolygonAreaName(polygons[index].name)
-        setErrorMessage('')
+    const handleEditPolygon =() => {
+        console.log('handle edit', selectedPolygon)
+        if(!selectedPolygon) {
+            console.log("hello")
+            setErrorMessage('Please select Polygon to edit.')
+        }
+    }
+
+    const handleShowPolygon = (index) =>{
+            drawRef.current.deleteAll();
+    const selectedFeature = polygons[index].feature;
+    drawRef.current.add(selectedFeature);
+    setPolygonAreaName(polygons[index].name);
+    setSelectedPolygon(index);
+    setErrorMessage('');
+
     }
     const handleCloseAlert =() => {
         setClearAlert(false)
@@ -127,7 +143,31 @@ drawRef.current = draw // this is to add the in drawRef
     }
 
     const handleUpdatePolygon = () => {
+         if (!polygonAreaName) {
+      setErrorMessage('Please enter a name for the polygon.');
+      return;
+    }
+    onOpen();
+    }
+
+    const handleConfirmUpdatePolygon = () => {
         console.log('updatePolygon')
+        const data = drawRef.current.getAll()
+        if(data.features.length > 0) {
+            const updatedPolygons = [...polygons]
+            updatedPolygons[selectedPolygon] ={
+                name: polygonAreaName,
+                feature: data.features[0]
+            }
+            setPolygons(updatedPolygons)
+            setSelectedPolygon(null)
+            setPolygonAreaName('')
+            setErrorMessage('')
+            setIsEditing(false)
+            drawRef.current.deleteAll()
+            onClose();
+
+        }
     }
 
 
@@ -187,13 +227,33 @@ drawRef.current = draw // this is to add the in drawRef
         <Box>
   <OrderedList style={{ margin: 0, padding: 0, listStylePosition: 'inside' }}>
             {polygons.map((polygon, index) => (
-          <ListItem key={index} onClick={() => handleEditPolygon(index)}>
+          <ListItem key={index} onClick={() => handleShowPolygon(index)}>
             {polygon.name}
           </ListItem>
         ))}
       </OrderedList>
 
-        </Box>   
+        </Box>  
+        <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Edit</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            Are you sure you want to edit this polygon "{polygonAreaName}"?
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleConfirmUpdatePolygon}>
+              OK
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+
         
 </Box>
 
