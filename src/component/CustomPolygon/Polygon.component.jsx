@@ -3,7 +3,7 @@ import mapboxgl, {Map} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { MAPBOX_KEY } from '../../settings';
-import { Button } from '@chakra-ui/react';
+import { ButtonGroup, Button, Input, Box, Text } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 
@@ -83,26 +83,42 @@ drawRef.current = draw // this is to add the in drawRef
 
     }
 
+    const handleSavePolygon = () => {
+        console.log("save")
+    }
+    const handleClearPolygon = () =>{
+        console.log("clear polygon")
+    }
+    const handleEditPolygon =() => {
+        console.log("handle Edit Polygon")
+    }
+
 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vh' }}>
-      <div ref={mapContainerRef} style={{ height: '80%', width: '100%' }}></div>
-     <div>
-        Button functionality goes here
+    <Box display= 'flex' style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vh' }}>
+      <Box ref={mapContainerRef} style={{ height: '70%', width: '100%' }}></Box>
+     <Box>
+   
+        <Box display='flex' alignItems='center' p ={4}>
+            <Text mr={2} >Title:</Text>
+            <Input placeholder='polygon name' />
+        
+        </Box>
 
-        <div>
-            <Button>
-                Save
-            </Button>
-        </div>
-        <div>
-            Title:
+
+
+             <Box p={4}>
+           <ButtonGroup variant='outline' spacing='6'>
+                <Button colorScheme='blue' onClick={handleSavePolygon}>Save</Button>
+                <Button colorScheme='red' onClick={handleClearPolygon}>Clear</Button>
+                <Button onClick={handleEditPolygon}>Edit</Button>
+
+            </ButtonGroup>
+        </Box>
         
-        </div>
-        
-     </div>
-     </div>
+     </Box>
+     </Box>
   );
 };
 
