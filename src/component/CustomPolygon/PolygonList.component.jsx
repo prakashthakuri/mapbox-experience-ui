@@ -1,3 +1,4 @@
+import React from 'react'
 import { Box, OrderedList, ListItem } from '@chakra-ui/react';
 
 const PolygonList = ({ polygons, roundedArea, handleShowPolygon }) => (
