@@ -13,6 +13,10 @@ import { ButtonGroup, Button, Input, Box, Text, Alert, AlertIcon, CloseButton, A
 useDisclosure } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { ADD_POLYGON } from '../../queries/mutation';
+import { GENERATE_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
+import { useSession } from '../../context/SessionContext';
 
 const Polygon = () => {
   const mapContainerRef = useRef();
@@ -27,8 +31,41 @@ const Polygon = () => {
     const [errorMessage, setErrorMessage] = useState('')
       const { isOpen, onOpen, onClose } = useDisclosure();
 
+      const [addPolygon] = useMutation(ADD_POLYGON, {
+        onCompleted: (data) => {
+          console.log("Polygon added successfully:", data);
+        },
+        onError: (error) => {
+          console.error("Error adding polygon:", error);
+          setErrorMessage('Failed to save polygon. ' + error.message);
+        }
+      });
+      const [ getAllPolygons, { loading, error, data }] = useLazyQuery(GET_POLYGONS);
+      const [getSessionId] = useLazyQuery(GENERATE_SESSION_ID);
+      // const { newsessionId, setSessionId } = useSession();
+
+      const [sessionId, setSessionId] = useState('')
+
+      useEffect(() => {
+        const fetchSessionId = async () => {
+          try {
+            const result = await getSessionId(); // Await the query trigger
+            if (result.data?.generateSessionId) {
+              setSessionId(result.data.generateSessionId);
+              console.log(result.data.generateSessionId, "sessionID");
+            }
+          } catch (error) {
+            console.error('Error generating session ID:', error);
+          }
+        };
+    
+        fetchSessionId();
+      }, [getSessionId]); 
 
   useEffect(() => {
+     
+    
+    // console.log(loading, error, data, "get Polygons")
     mapboxgl.accessToken = MAPBOX_KEY;
     // clear extra texts or anythings
 
@@ -70,7 +107,7 @@ drawRef.current = draw // this is to add the in drawRef
     const data = drawRef.current.getAll()
     if(data.features.length > 0) {
         const lines = data.features[0].geometry.coordinates;
-        console.log(lines, lines.length, "LINES")
+        console.log(lines)
         if(lines.length >= 4) {
             const polygon = turf.polygon([[...lines, lines[0]]])
             const area = turf.area(polygon);
@@ -95,23 +132,36 @@ drawRef.current = draw // this is to add the in drawRef
 
     }
 
-    const handleSavePolygon = () => {
-        console.log("save")
+    const handleSavePolygon = async () => {
 
         if(!polygonAreaName) {
             setErrorMessage('Please enter a valid name for a polygon')
-
         }
-
         const data = drawRef.current.getAll();
         if(data.features.length >0) {
             const newPolygon = {
                 name: polygonAreaName,
-                feature: data.features[0]
+                coordinates: data.features[0].geometry.coordinates
+            };
+            console.log(newPolygon, 'newPolygon')
+            try{
+              await addPolygon({
+                variables: {
+                  input: {
+                  name: newPolygon.name,
+                  coordinates: newPolygon.coordinates,
+                  session_id: sessionId
+                }
+              }
+              })
+              setPolygons([...polygons, newPolygon])
+              setPolygonAreaName('')
+              // drawRef.current.deleteAll() // this could be optional
             }
-            setPolygons([...polygons, newPolygon])
-            setPolygonAreaName('')
-            // drawRef.current.deleteAll() // this could be optional
+            catch(error) {
+              setErrorMessage('Failed to save polygon')
+            }
+           
         }
 
     }

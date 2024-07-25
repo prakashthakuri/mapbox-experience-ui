@@ -1,17 +1,17 @@
 
-import { ApolloProvider } from '@apollo/client'
 import './App.css'
 import Polygon from './component/CustomPolygon/Polygon.component'
-import { client } from './services/apolloClient'
+import { SessionProvider } from './context/SessionContext.jsx'
+
 
 function App() {
-
+  
+  
   return (
-    <ApolloProvider client={client}>
-          <div>
-      <Polygon />
-          </div>
-    </ApolloProvider>
+        <SessionProvider>
+        <Polygon /> 
+        </SessionProvider>
+ 
   )
 }
 
