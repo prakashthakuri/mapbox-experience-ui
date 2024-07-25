@@ -33,7 +33,7 @@ import PolygonList from './PolygonList.component';
 const Polygon = () => {
   const [polygons, setPolygons] = useState([]);
   const [selectedPolygon, setSelectedPolygon] = useState(null);
-  const [roundedArea, setRoundedArea] = useState();
+  const [roundedArea, setRoundedArea] = useState(0.00);
   const [polygonAreaName, setPolygonAreaName] = useState('');
   const [clearAlert, setClearAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -111,9 +111,12 @@ const Polygon = () => {
     const data = drawRef.current.getAll();
     if (data.features.length > 0) {
       const lines = data.features[0].geometry.coordinates;
+      console.log(lines, lines.length, "lines")
       if (lines.length >= 4) {
+        console.log("success")
         const polygon = turf.polygon([[...lines, lines[0]]]);
         const area = turf.area(polygon);
+        console.log(area, "Area")
         setRoundedArea(Math.round(area * 100) / 100);
         drawRef.current.deleteAll();
         drawRef.current.add({
@@ -215,35 +218,39 @@ const Polygon = () => {
   };
 
   return (
-    <Box display='flex' style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vh' }}>
-      <PolygonMap mapContainerRef={mapContainerRef} />
-      <PolygonForm
-        polygonAreaName={polygonAreaName}
-        setPolygonAreaName={setPolygonAreaName}
-        handleSavePolygon={handleSavePolygon}
-        handleClearPolygon={handleClearPolygon}
-        handleEditPolygon={handleEditPolygon}
-        selectedPolygon={selectedPolygon}
-      />
-      {clearAlert && (
-        <Alert status='success'>
-          <AlertIcon />
-          <Box>
-            <AlertDescription>Polygon was Cleared</AlertDescription>
-          </Box>
-          <CloseButton position='absolute' top={2} right={2} onClick={handleCloseAlert} />
-        </Alert>
-      )}
-      {errorMessage && (
-        <Alert status='error'>
-          <AlertIcon />
-          <Box>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Box>
-          <CloseButton position='absolute' top={2} right={2} onClick={handleCloseAlert} />
-        </Alert>
-      )}
-      <PolygonList polygons={polygons} roundedArea={roundedArea} handleShowPolygon={handleShowPolygon} />
+    <Box display='flex' style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: '100vw' }}>
+      <Box flex='1' display='flex' flexDirection='column'>
+        <PolygonMap mapContainerRef={mapContainerRef} />
+        <PolygonForm
+          polygonAreaName={polygonAreaName}
+          setPolygonAreaName={setPolygonAreaName}
+          handleSavePolygon={handleSavePolygon}
+          handleClearPolygon={handleClearPolygon}
+          handleEditPolygon={handleEditPolygon}
+          selectedPolygon={selectedPolygon}
+        />
+        {clearAlert && (
+          <Alert status='success'>
+            <AlertIcon />
+            <Box>
+              <AlertDescription>Polygon was Cleared</AlertDescription>
+            </Box>
+            <CloseButton position='absolute' top={2} right={2} onClick={handleCloseAlert} />
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert status='error'>
+            <AlertIcon />
+            <Box>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Box>
+            <CloseButton position='absolute' top={2} right={2} onClick={handleCloseAlert} />
+          </Alert>
+        )}
+      </Box>
+      <Box flex='1' overflowY='auto'>
+        <PolygonList polygons={polygons} roundedArea={roundedArea} handleShowPolygon={handleShowPolygon} />
+      </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
