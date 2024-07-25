@@ -5,3 +5,9 @@ import 'jest-mock';
 global.TextDecoder = TextDecoder;
 global.TextEncoder = TextEncoder;
 
+global.performance = {
+    mark: jest.fn(),
+    measure: jest.fn(),
+    clearMarks: jest.fn(),
+    clearMeasures: jest.fn(),
+  };

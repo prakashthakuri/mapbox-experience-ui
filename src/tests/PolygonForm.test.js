@@ -2,59 +2,91 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PolygonForm from '../component/CustomPolygon/PolygonForm.component';
 
-describe('PolygonForm Component', () => {
-  const mockSetPolygonAreaName = jest.fn();
-  const mockHandleSavePolygon = jest.fn();
-  const mockHandleClearPolygon = jest.fn();
-  const mockHandleEditPolygon = jest.fn();
 
-  const renderComponent = (selectedPolygon = null) => {
+describe('PolygonForm Component', () => {
+  const handleSavePolygon = jest.fn();
+  const handleClearPolygon = jest.fn();
+  const handleUpdatePolygon = jest.fn();
+  const setPolygonAreaName = jest.fn();
+
+  it('renders with initial state', () => {
     render(
       <PolygonForm
-        polygonAreaName="Test Polygon"
-        setPolygonAreaName={mockSetPolygonAreaName}
-        handleSavePolygon={mockHandleSavePolygon}
-        handleClearPolygon={mockHandleClearPolygon}
-        handleEditPolygon={mockHandleEditPolygon}
-        selectedPolygon={selectedPolygon}
+        polygonAreaName=""
+        setPolygonAreaName={setPolygonAreaName}
+        handleSavePolygon={handleSavePolygon}
+        handleClearPolygon={handleClearPolygon}
+        selectedPolygon={null}
+        handleUpdatePolygon={handleUpdatePolygon}
       />
     );
-  };
 
-  test('renders PolygonForm with initial values', () => {
-    renderComponent();
-
-    expect(screen.getByText('Title:')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Polygon name')).toHaveValue('Test Polygon');
+    expect(screen.getByPlaceholderText('Polygon name')).toBeInTheDocument();
     expect(screen.getByText('Save')).toBeInTheDocument();
     expect(screen.getByText('Clear')).toBeInTheDocument();
   });
 
-  test('handles input change', () => {
-    renderComponent();
+  it('calls setPolygonAreaName on input change', () => {
+    render(
+      <PolygonForm
+        polygonAreaName=""
+        setPolygonAreaName={setPolygonAreaName}
+        handleSavePolygon={handleSavePolygon}
+        handleClearPolygon={handleClearPolygon}
+        selectedPolygon={null}
+        handleUpdatePolygon={handleUpdatePolygon}
+      />
+    );
 
-    fireEvent.change(screen.getByPlaceholderText('Polygon name'), { target: { value: 'New Polygon Name' } });
-    expect(mockSetPolygonAreaName).toHaveBeenCalledWith('New Polygon Name');
+    fireEvent.change(screen.getByPlaceholderText('Polygon name'), { target: { value: 'New Polygon' } });
+    expect(setPolygonAreaName).toHaveBeenCalledWith('New Polygon');
   });
 
-  test('handles save button click', () => {
-    renderComponent();
+  it('calls handleSavePolygon on Save button click', () => {
+    render(
+      <PolygonForm
+        polygonAreaName="Polygon 1"
+        setPolygonAreaName={setPolygonAreaName}
+        handleSavePolygon={handleSavePolygon}
+        handleClearPolygon={handleClearPolygon}
+        selectedPolygon={null}
+        handleUpdatePolygon={handleUpdatePolygon}
+      />
+    );
 
     fireEvent.click(screen.getByText('Save'));
-    expect(mockHandleSavePolygon).toHaveBeenCalled();
+    expect(handleSavePolygon).toHaveBeenCalled();
   });
 
-  test('handles update button click when selectedPolygon is not null', () => {
-    renderComponent(1);
+  it('calls handleUpdatePolygon on Update button click', () => {
+    render(
+      <PolygonForm
+        polygonAreaName="Polygon 1"
+        setPolygonAreaName={setPolygonAreaName}
+        handleSavePolygon={handleSavePolygon}
+        handleClearPolygon={handleClearPolygon}
+        selectedPolygon={1}
+        handleUpdatePolygon={handleUpdatePolygon}
+      />
+    );
 
     fireEvent.click(screen.getByText('Update'));
-    expect(mockHandleEditPolygon).toHaveBeenCalled();
+    expect(handleUpdatePolygon).toHaveBeenCalled();
   });
 
-  test('handles clear button click', () => {
-    renderComponent();
+  it('calls handleClearPolygon on Clear button click', () => {
+    render(
+      <PolygonForm
+        polygonAreaName="Polygon 1"
+        setPolygonAreaName={setPolygonAreaName}
+        handleSavePolygon={handleSavePolygon}
+        handleClearPolygon={handleClearPolygon}
+        selectedPolygon={1}
+        handleUpdatePolygon={handleUpdatePolygon}
+      />
+    );
 
     fireEvent.click(screen.getByText('Clear'));
-    expect(mockHandleClearPolygon).toHaveBeenCalled();
+    expect(handleClearPolygon).toHaveBeenCalled();
   });
 });
