@@ -15,7 +15,7 @@ const PolygonList = ({ polygons, polygonArea, handleShowPolygon }) => (
           {polygons.map((polygon, index) => (
             <Tr key={index} onClick={() => handleShowPolygon(index)} cursor="pointer" _hover={{ backgroundColor: "gray.100" }}>
               <Td>{polygon.name}</Td>
-              <Td>{polygonArea}</Td>
+              <Td>{polygonArea} m<sup>2</sup></Td>
             </Tr>
           ))}
         </Tbody>

@@ -22,6 +22,8 @@ import {
 } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
+import booleanValid from '@turf/boolean-valid';
+
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { ADD_POLYGON } from '../../queries/mutation';
 import { GENERATE_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
@@ -73,6 +75,27 @@ const Polygon = () => {
     fetchSessionId();
   }, [getSessionId]);
 
+
+  const updateArea = () => {
+    const data = drawRef.current.getAll();
+    if (data.features.length > 0) {
+      const lines = data?.features[0]?.geometry?.coordinates[0];
+      if (lines.length >= 4) {
+        const polygon = turf.polygon([[...lines, lines[0]]]);
+        const area = Math.round(turf.area(polygon) * 100) / 100;  
+        setRoundedArea(area);
+        drawRef.current.deleteAll();
+        drawRef.current.add({
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[...lines, lines[0]]],
+          },
+          properties: {},
+        });
+      }
+    }
+  };
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
 
@@ -106,34 +129,6 @@ const Polygon = () => {
       mapRef.current.remove();
     };
   }, []);
-
-  const updateArea = () => {
-    const data = drawRef.current.getAll();
-    if (data.features.length > 0) {
-      const lines = data.features[0].geometry.coordinates;
-      console.log(lines, lines.length, "lines")
-      if (lines.length >= 4) {
-        console.log("success")
-        const polygon = turf.polygon([[...lines, lines[0]]]);
-        const area = turf.area(polygon);
-        console.log(area, "Area")
-        setRoundedArea(Math.round(area * 100) / 100);
-        drawRef.current.deleteAll();
-        drawRef.current.add({
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [[...lines, lines[0]]],
-          },
-          properties: {},
-        });
-      } else {
-        setRoundedArea();
-      }
-    } else {
-      setRoundedArea();
-    }
-  };
 
   const handleSavePolygon = async () => {
     if (!polygonAreaName) {
@@ -249,7 +244,7 @@ const Polygon = () => {
         )}
       </Box>
       <Box flex='1' overflowY='auto'>
-        <PolygonList polygons={polygons} roundedArea={roundedArea} handleShowPolygon={handleShowPolygon} />
+        <PolygonList polygons={polygons} polygonArea={roundedArea} handleShowPolygon={handleShowPolygon} />
       </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
