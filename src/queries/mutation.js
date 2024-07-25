@@ -6,7 +6,7 @@ mutation AddPolygon($input: PolygonInput!) {
       id
       name
       coordinates
-      session_id
+      sessionId
       created_at
       updated_at
     }
@@ -19,7 +19,7 @@ export const UPDATE_POLYGON = gql`
       id
       name
       coordinates
-      session_id
+      sessionId
       created_at
       updated_at
     }

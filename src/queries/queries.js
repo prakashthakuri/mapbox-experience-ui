@@ -5,7 +5,7 @@ const polygonType = `
     id,
     name,
     coordinates,
-    session_id,
+    sessionId,
     created_at,
     updated_at        
 `

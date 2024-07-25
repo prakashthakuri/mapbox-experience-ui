@@ -1,12 +1,13 @@
 import { Box, Text, Input, ButtonGroup, Button } from '@chakra-ui/react';
-import React from 'react'
+import React from 'react';
+
 const PolygonForm = ({
   polygonAreaName,
   setPolygonAreaName,
   handleSavePolygon,
   handleClearPolygon,
-  handleEditPolygon,
   selectedPolygon,
+  handleUpdatePolygon
 }) => (
   <Box display='flex' alignItems='center' p={4}>
     <Text mr={2}>Title:</Text>
@@ -18,7 +19,7 @@ const PolygonForm = ({
       }}
     />
     <ButtonGroup variant='outline' spacing='6' ml={4}>
-      <Button colorScheme='blue' onClick={selectedPolygon === null ? handleSavePolygon : handleEditPolygon}>
+      <Button colorScheme='blue' onClick={selectedPolygon === null ? handleSavePolygon : handleUpdatePolygon}>
         {selectedPolygon === null ? 'Save' : 'Update'}
       </Button>
       <Button colorScheme='red' onClick={handleClearPolygon}>
