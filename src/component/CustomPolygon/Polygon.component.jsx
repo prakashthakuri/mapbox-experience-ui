@@ -179,6 +179,7 @@ const Polygon = () => {
   };
 
   const handleShowPolygon = (index) => {
+    console.log("clicked handle show POlugon", index)
     if (selectedPolygon === index) {
       setSelectedPolygon(null);
       setPolygonAreaName('');
@@ -191,6 +192,7 @@ const Polygon = () => {
       return;
     }
     try {
+      console.log("trying?")
       drawRef.current.add({
         type: 'Feature',
         geometry: {
@@ -292,16 +294,15 @@ const Polygon = () => {
             <Alert status="info" mt={4}>
               <AlertIcon />
               <AlertDescription>
-                TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.
-              </AlertDescription>
+{               ` TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.`}              </AlertDescription>
             </Alert>
           }
-          <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName} handleShowPolygon={handleShowPolygon} />
+          <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName}  handleShowPolygon={handleShowPolygon} />
         </Box>
       </Box>
     
       <Box width='40%' p={4}>
-        <PolygonViewer sessionId={sessionId} />
+        <PolygonViewer sessionId={sessionId} mapRef={mapRef} drawRef={drawRef}  />
       </Box>
     
       <Modal isOpen={isOpen} onClose={onClose}>

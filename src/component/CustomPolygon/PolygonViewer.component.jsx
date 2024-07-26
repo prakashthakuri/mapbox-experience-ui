@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
 import { Box, Button, Text, Table, Thead, Tbody, Tr, Th, Td, HStack, Input, Alert, AlertIcon, AlertDescription, Link } from '@chakra-ui/react';
 import { GET_POLYGON_BY_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
+import { displayPolygonOnMap } from '../../util';
 
 const ITEMS_PER_PAGE = 4;
 
-const PolygonViewer = ({ sessionId }) => {
+const PolygonViewer = ({ sessionId, mapRef, drawRef }) => {
   const [polygons, setPolygons] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorMessage, setErrorMessage] = useState('')
   const [userInput, setUserInput] = useState('');
+  const [errorMessageForShowingPolygon, setErrorMessageForShowingPolygon] = useState('')
+
 
   const sharableLink = `${window.location.origin}/view?session_id=${sessionId}`;
 
@@ -47,6 +50,13 @@ const PolygonViewer = ({ sessionId }) => {
       }
       };  
 
+      const handlePolygonClick = (polygon) => {
+        setErrorMessageForShowingPolygon('')
+        try {
+          displayPolygonOnMap(mapRef, drawRef, polygon); // Use the utility function
+        } catch (error) {
+          setErrorMessageForShowingPolygon(error.message);
+        } }
 
   const totalPages = Math.ceil(polygons.length / ITEMS_PER_PAGE);
   const displayedPolygons = polygons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -84,6 +94,18 @@ const PolygonViewer = ({ sessionId }) => {
      
         </Box>
       )}
+
+      <Box>
+      {errorMessageForShowingPolygon && 
+      
+      <Alert status='error'>
+      <AlertIcon />
+      <Box>
+        <AlertDescription>{errorMessageForShowingPolygon}</AlertDescription>
+      </Box>
+    </Alert>
+      }
+      </Box>
      
      {polygons.length > 0 && (
         <>
@@ -97,7 +119,7 @@ const PolygonViewer = ({ sessionId }) => {
               </Thead>
               <Tbody>
                 {displayedPolygons.map((polygon) => (
-                  <Tr key={polygon.id}>
+                  <Tr key={polygon.id} onClick={()=> handlePolygonClick(polygon)} cursor="pointer" _hover={{ backgroundColor: "gray.100" }}>
                     <Td>{polygon.name}</Td>
                     <Td>{JSON.stringify(polygon.coordinates)}</Td>
                   </Tr>
