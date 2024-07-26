@@ -15,6 +15,7 @@ const useQueryParams = () => {
 
 const ViewPolygons = () => {
   const [polygons, setPolygons] = useState([]);
+  const [selectedPolygon, setSelectedPolygon] = useState(null);
   const queryParams = useQueryParams();
   const sessionId = queryParams.get('session_id');
 
@@ -22,6 +23,7 @@ const ViewPolygons = () => {
 
   const mapContainerRef = useRef(null);
   const drawRef = useRef(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
@@ -42,6 +44,8 @@ const ViewPolygons = () => {
 
     drawRef.current = draw;
     map.addControl(draw);
+
+    mapRef.current = map;
 
     return () => {
       map.remove();
@@ -71,6 +75,27 @@ const ViewPolygons = () => {
     }
   }, [data]);
 
+  const handlePolygonClick = (polygon) => {
+    const drawFeatures = drawRef.current.getAll();
+    drawFeatures.features.forEach(feature => {
+      drawRef.current.delete(feature.id);
+    });
+
+    drawRef.current.add({
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: polygon.coordinates,
+      },
+      properties: {},
+    });
+
+    const bounds = new mapboxgl.LngLatBounds();
+    polygon.coordinates[0].forEach(coord => {
+      bounds.extend(coord);
+    });
+    mapRef.current.fitBounds(bounds, { padding: 20 });
+  };
   return (
     <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md">
       <Text mb={4}>Affected Area for {sessionId}</Text>
@@ -90,38 +115,36 @@ const ViewPolygons = () => {
           No data found.
         </Alert>
       )}
-            <Alert status="info" mt={4}>
+      <Alert status="info" mt={4}>
         <AlertIcon />
         <AlertDescription>
-        This is view-only mode. You cannot edit or make changes here. To update, go to the 
-        <Link to="/"> HOME</Link>.
+          This is view-only mode. You cannot edit or make changes here. To update, go to the 
+          <Link to="/"> HOME</Link>.
         </AlertDescription>
-      
       </Alert>
       <Box>
-      {polygons.length > 0 && (
-        <Table variant="simple" mt={4}>
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Coordinates</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {polygons.map((polygon) => (
-              <Tr key={polygon.id}>
-                <Td>{polygon.name}</Td>
-                <Td>{JSON.stringify(polygon.coordinates)}</Td>
+        {polygons.length > 0 && (
+          <Table variant="simple" mt={4}>
+            <Thead>
+              <Tr>
+                <Th>Name</Th>
+                <Th>Coordinates</Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      )}
+            </Thead>
+            <Tbody>
+              {polygons.map((polygon) => (
+                <Tr key={polygon.id} onClick={() => handlePolygonClick(polygon)} style={{ cursor: 'pointer' }}>
+                  <Td>{polygon.name}</Td>
+                  <Td>{JSON.stringify(polygon.coordinates)}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        )}
       </Box>
-  
-
     </Box>
   );
 };
 
 export default ViewPolygons;
+
