@@ -1,106 +1,50 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
-import mapboxgl from 'mapbox-gl';
-import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, HStack, Input, Alert, AlertIcon, AlertDescription, Link as ChakraLink } from '@chakra-ui/react';
-import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, HStack, Input, Alert, AlertIcon, AlertDescription, Link } from '@chakra-ui/react';
 import { GET_POLYGON_BY_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
-import { MAPBOX_KEY } from '../../settings';
 
 const ITEMS_PER_PAGE = 5;
 
 const PolygonViewer = ({ sessionId }) => {
   const [polygons, setPolygons] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('')
   const [userInput, setUserInput] = useState('');
 
-  const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
-  const drawRef = useRef(null);
+  const sharableLink = `${window.location.origin}/view?session_id=${sessionId}`;
 
-  useEffect(() => {
-    mapboxgl.accessToken = MAPBOX_KEY;
-
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-74.5, 40],
-      zoom: 9,
-    });
-
-    const draw = new Map({
-      displayControlsDefault: false,
-      userProperties: false,
-      boxSelect: false,
-      touchEnabled: false,
-    });
-
-    drawRef.current = draw;
-    mapRef.current.addControl(draw);
-
-    return () => {
-      mapRef.current.remove();
-    };
-  }, []);
 
   const [getAllPolygons] = useLazyQuery(GET_POLYGONS, {
     onCompleted: (data) => {
       setPolygons(data?.getPolygons);
-      populateMapWithPolygons(data?.getPolygons);
     },
     onError: () => {
-      setErrorMessage('Failed to fetch polygons. Please try again!');
+        setErrorMessage(`Failed to fetch polygons. Please try again!`)
     }
-  });
+  });  
 
   const [getPolygonsBySession] = useLazyQuery(GET_POLYGON_BY_SESSION_ID, {
     onCompleted: (data) => {
       setPolygons(data.getPolygonsBySession);
-      populateMapWithPolygons(data.getPolygonsBySession);
     },
     onError: () => {
-      setErrorMessage('No data found for the provided session ID.');
+      setErrorMessage(`No data found for the provided session ID.`);
     }
   });
 
-  const handleFetchPolygons = () => {
-    if (userInput.toLowerCase() === 'admin') {
-      getAllPolygons();
-    } else {
-      getPolygonsBySession({ variables: { session_id: userInput } });
-    }
-  };
 
-  const populateMapWithPolygons = (polygons) => {
-    drawRef.current.deleteAll();
-    polygons.forEach((polygon) => {
-      drawRef.current.add({
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: polygon.coordinates,
-        },
-        properties: {},
-      });
-    });
-  };
 
-  const handlePolygonClick = (polygon) => {
-    drawRef.current.deleteAll();
-    drawRef.current.add({
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: polygon.coordinates,
-      },
-      properties: {},
-    });
-  };
+    const handleFetchPolygons = () => {
+        if (userInput.toLowerCase() === 'admin') {
+          getAllPolygons();
+        } else {
+          getPolygonsBySession({ variables: { session_id: userInput } });
+        }
+      };  
+
 
   const totalPages = Math.ceil(polygons.length / ITEMS_PER_PAGE);
   const displayedPolygons = polygons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-// this will always give the sharable link of current session
-  const sharableLink = `${window.location.origin}/view?session_id=${sessionId}`;
 
   return (
     <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md" flex="1">
@@ -114,12 +58,14 @@ const PolygonViewer = ({ sessionId }) => {
         Fetch Polygons
       </Button>
       {errorMessage && 
-        <Alert status="error" mb={4}>
-          <AlertIcon />
-          {errorMessage}
-        </Alert>
+           <Alert status="info" mt={4}>
+           <AlertIcon />
+           <AlertDescription>
+           TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.        </AlertDescription>
+          
+         </Alert>
       }
-      <Box ref={mapContainerRef} mb={4} style={{ height: '400px', width: '100%' }} />
+     
       {polygons.length > 0 && (
         <>
           <Table variant="simple">
@@ -131,7 +77,7 @@ const PolygonViewer = ({ sessionId }) => {
             </Thead>
             <Tbody>
               {displayedPolygons.map((polygon) => (
-                <Tr key={polygon.id} onClick={() => handlePolygonClick(polygon)}>
+                <Tr key={polygon.id}>
                   <Td>{polygon.name}</Td>
                   <Td>{JSON.stringify(polygon.coordinates)}</Td>
                 </Tr>
@@ -148,17 +94,15 @@ const PolygonViewer = ({ sessionId }) => {
           </HStack>
         </>
       )}
-      <Alert status="info" mt={4}>
-        <AlertIcon />
-        <AlertDescription>
-          TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.
-        </AlertDescription>
-      </Alert>
       {sharableLink && (
         <Box mt={4}>
-          <ChakraLink href={sharableLink} isExternal>
-            Sharable Link
-          </ChakraLink>
+            <Link href={sharableLink} isExternal >
+            Sharable Link 
+            {/*  confused on what to say here
+            i guess i can use link from router here that might be better
+            */}
+            </Link>
+     
         </Box>
       )}
     </Box>

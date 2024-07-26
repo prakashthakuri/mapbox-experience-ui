@@ -5,6 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import { MAPBOX_KEY } from '../../settings';
 
 const PolygonMap = ({ mapContainerRef }) => {
+
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
 
@@ -19,6 +20,7 @@ const PolygonMap = ({ mapContainerRef }) => {
       map.remove();
     };
   }, [mapContainerRef]);
+
 
   return <div ref={mapContainerRef} style={{ height: '70%', width: '100%' }} />;
 };
