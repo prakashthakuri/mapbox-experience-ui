@@ -18,8 +18,7 @@ const ViewPolygons = () => {
   const [polygons, setPolygons] = useState([]);
   const queryParams = useQueryParams();
   const sessionId = queryParams.get('session_id');
-  const [errorMessageForShowingPolygon, setErrorMessageForShowingPolygon] = useState('')
-
+  const [errorMessageForShowingPolygon, setErrorMessageForShowingPolygon] = useState('');
   const [getPolygonsBySession, { loading, data, error }] = useLazyQuery(GET_POLYGON_BY_SESSION_ID);
 
   const mapContainerRef = useRef(null);
@@ -29,40 +28,44 @@ const ViewPolygons = () => {
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-74.5, 40],
-      zoom: 9,
-    });
+    const initializeMap = () => {
+      const map = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-74.5, 40],
+        zoom: 9,
+      });
 
-    const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      userProperties: false,
-      boxSelect: false,
-      touchEnabled: false,
-    });
+      const draw = new MapboxDraw({
+        displayControlsDefault: false,
+        userProperties: false,
+        boxSelect: false,
+        touchEnabled: false,
+      });
 
-    drawRef.current = draw;
-    map.addControl(draw);
+      drawRef.current = draw;
+      map.addControl(draw);
 
-    mapRef.current = map;
+      mapRef.current = map;
 
-    return () => {
-      map.remove();
+      return () => {
+        map.remove();
+      };
     };
+
+    initializeMap();
   }, []);
 
   useEffect(() => {
     if (sessionId) {
       getPolygonsBySession({ variables: { session_id: sessionId } });
     }
-  }, [sessionId]);
+  }, [sessionId, getPolygonsBySession]);
 
   useEffect(() => {
     if (data) {
       setPolygons(data.getPolygonsBySession);
-      data.getPolygonsBySession.forEach(polygon => {
+      data.getPolygonsBySession.forEach((polygon) => {
         drawRef.current.add({
           type: 'Feature',
           geometry: {
@@ -75,13 +78,23 @@ const ViewPolygons = () => {
     }
   }, [data]);
 
- const handlePolygonClick = (polygon) => {
-  try {
-    setErrorMessageForShowingPolygon('')
-    displayPolygonOnMap(mapRef, drawRef, polygon); 
-  } catch (error) {
-    setErrorMessageForShowingPolygon(error.message);
-  } }
+  const handlePolygonClick = (polygon) => {
+    try {
+      setErrorMessageForShowingPolygon('');
+      displayPolygonOnMap(mapRef, drawRef, polygon);
+    } catch (error) {
+      setErrorMessageForShowingPolygon(error.message);
+    }
+  };
+
+  const renderTableBody = () =>
+    polygons.map((polygon) => (
+      <Tr key={polygon.id} onClick={() => handlePolygonClick(polygon)} style={{ cursor: 'pointer' }}>
+        <Td>{polygon.name}</Td>
+        <Td>{JSON.stringify(polygon.coordinates)}</Td>
+      </Tr>
+    ));
+
   return (
     <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md">
       <Text mb={4}>Affected Area for {sessionId}</Text>
@@ -109,40 +122,26 @@ const ViewPolygons = () => {
         </AlertDescription>
       </Alert>
 
-      <Box>
-      {errorMessageForShowingPolygon && 
-      
-      <Alert status='error'>
-      <AlertIcon />
-      <Box>
-        <AlertDescription>{errorMessageForShowingPolygon}</AlertDescription>
-      </Box>
-    </Alert>
-      }
-      </Box>
-      <Box>
-        {polygons.length > 0 && (
-          <Table variant="simple" mt={4}>
-            <Thead>
-              <Tr>
-                <Th>Name</Th>
-                <Th>Coordinates</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {polygons.map((polygon) => (
-                <Tr key={polygon.id} onClick={() => handlePolygonClick(polygon)} style={{ cursor: 'pointer' }}>
-                  <Td>{polygon.name}</Td>
-                  <Td>{JSON.stringify(polygon.coordinates)}</Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        )}
-      </Box>
+      {errorMessageForShowingPolygon && (
+        <Alert status="error" mt={4}>
+          <AlertIcon />
+          <AlertDescription>{errorMessageForShowingPolygon}</AlertDescription>
+        </Alert>
+      )}
+
+      {polygons.length > 0 && (
+        <Table variant="simple" mt={4}>
+          <Thead>
+            <Tr>
+              <Th>Name</Th>
+              <Th>Coordinates</Th>
+            </Tr>
+          </Thead>
+          <Tbody>{renderTableBody()}</Tbody>
+        </Table>
+      )}
     </Box>
   );
 };
 
 export default ViewPolygons;
-

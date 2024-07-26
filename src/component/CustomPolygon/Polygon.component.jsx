@@ -38,8 +38,7 @@ const Polygon = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [sessionId, setSessionId] = useState('');
-  const [disableSaveButton , setDisableSaveButton] = useState(false);
-
+  const [disableSaveButton , setDisableSaveButton] = useState(false); // this true means that user is clicking from the PolygonViewer, this is cool way lol
   const [addPolygon] = useMutation(ADD_POLYGON, {
     onCompleted: (data) => {
       setPolygons([...polygons, data.addPolygon]);
@@ -95,7 +94,9 @@ const Polygon = () => {
       if (lines.length >= 4) {
         const polygon = turf.polygon([[...lines, lines[0]]]);
         const area = Math.round(turf.area(polygon) * 100) / 100;  
-        setRoundedArea(area);
+        if(!disableSaveButton){
+          setRoundedArea(area);
+        }
         drawRef.current.deleteAll();
         drawRef.current.add({
           type: 'Feature',
@@ -250,7 +251,7 @@ const Polygon = () => {
           },
         });
       } catch (error) {
-        setErrorMessage('Failed to update polygon');
+        setErrorMessage('You cannot update this existing map. This feature is not available at this moment.');
       }
       onClose();
     }
