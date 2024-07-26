@@ -8,6 +8,7 @@ import { Box, Table, Thead, Tbody, Tr, Th, Td, Alert, AlertIcon, Text, AlertDesc
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import { MAPBOX_KEY } from '../../settings';
 import PolygonMap from './PolygonMap.component';
+import { displayPolygonOnMap } from '../../util';
 
 const useQueryParams = () => {
   return new URLSearchParams(useLocation().search);
@@ -15,9 +16,9 @@ const useQueryParams = () => {
 
 const ViewPolygons = () => {
   const [polygons, setPolygons] = useState([]);
-  const [selectedPolygon, setSelectedPolygon] = useState(null);
   const queryParams = useQueryParams();
   const sessionId = queryParams.get('session_id');
+  const [errorMessageForShowingPolygon, setErrorMessageForShowingPolygon] = useState('')
 
   const [getPolygonsBySession, { loading, data, error }] = useLazyQuery(GET_POLYGON_BY_SESSION_ID);
 
@@ -61,7 +62,6 @@ const ViewPolygons = () => {
   useEffect(() => {
     if (data) {
       setPolygons(data.getPolygonsBySession);
-      // Add polygons to the map
       data.getPolygonsBySession.forEach(polygon => {
         drawRef.current.add({
           type: 'Feature',
@@ -75,27 +75,13 @@ const ViewPolygons = () => {
     }
   }, [data]);
 
-  const handlePolygonClick = (polygon) => {
-    const drawFeatures = drawRef.current.getAll();
-    drawFeatures.features.forEach(feature => {
-      drawRef.current.delete(feature.id);
-    });
-
-    drawRef.current.add({
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: polygon.coordinates,
-      },
-      properties: {},
-    });
-
-    const bounds = new mapboxgl.LngLatBounds();
-    polygon.coordinates[0].forEach(coord => {
-      bounds.extend(coord);
-    });
-    mapRef.current.fitBounds(bounds, { padding: 20 });
-  };
+ const handlePolygonClick = (polygon) => {
+  try {
+    setErrorMessageForShowingPolygon('')
+    displayPolygonOnMap(mapRef, drawRef, polygon); 
+  } catch (error) {
+    setErrorMessageForShowingPolygon(error.message);
+  } }
   return (
     <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md">
       <Text mb={4}>Affected Area for {sessionId}</Text>
@@ -122,6 +108,18 @@ const ViewPolygons = () => {
           <Link to="/"> HOME</Link>.
         </AlertDescription>
       </Alert>
+
+      <Box>
+      {errorMessageForShowingPolygon && 
+      
+      <Alert status='error'>
+      <AlertIcon />
+      <Box>
+        <AlertDescription>{errorMessageForShowingPolygon}</AlertDescription>
+      </Box>
+    </Alert>
+      }
+      </Box>
       <Box>
         {polygons.length > 0 && (
           <Table variant="simple" mt={4}>
