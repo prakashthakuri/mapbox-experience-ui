@@ -99,8 +99,8 @@ const PolygonViewer = ({ sessionId }) => {
 
   const totalPages = Math.ceil(polygons.length / ITEMS_PER_PAGE);
   const displayedPolygons = polygons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
-  const sharableLink = `${window.location.origin}/view?session_id=${userInput}`;
+// this will always give the sharable link of current session
+  const sharableLink = `${window.location.origin}/view?session_id=${sessionId}`;
 
   return (
     <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md" flex="1">
