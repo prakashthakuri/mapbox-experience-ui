@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
-import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, HStack, Input, Alert, AlertIcon, AlertDescription, Link } from '@chakra-ui/react';
+import { Box, Button, Text, Table, Thead, Tbody, Tr, Th, Td, HStack, Input, Alert, AlertIcon, AlertDescription, Link } from '@chakra-ui/react';
 import { GET_POLYGON_BY_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 4;
 
 const PolygonViewer = ({ sessionId }) => {
   const [polygons, setPolygons] = useState([]);
@@ -26,6 +26,7 @@ const PolygonViewer = ({ sessionId }) => {
   const [getPolygonsBySession] = useLazyQuery(GET_POLYGON_BY_SESSION_ID, {
     onCompleted: (data) => {
       setPolygons(data.getPolygonsBySession);
+
     },
     onError: () => {
       setErrorMessage(`No data found for the provided session ID.`);
@@ -35,11 +36,15 @@ const PolygonViewer = ({ sessionId }) => {
 
 
     const handleFetchPolygons = () => {
-        if (userInput.toLowerCase() === 'admin') {
+      if(userInput === ''){
+        setErrorMessage('Enter token or session ID')
+      }
+      else if (userInput.toLowerCase() === 'admin') {
           getAllPolygons();
-        } else {
-          getPolygonsBySession({ variables: { session_id: userInput } });
-        }
+        } 
+      else {
+        getPolygonsBySession({ variables: { session_id: userInput } });
+      }
       };  
 
 
@@ -47,54 +52,28 @@ const PolygonViewer = ({ sessionId }) => {
   const displayedPolygons = polygons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
-    <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md" flex="1">
+    <Box p={4} borderWidth={1} borderRadius="md" boxShadow="md" flex="1" height='100vh' overflowX="auto">
+     <Text>Token or Session Id:</Text>
       <Input
-        placeholder="Enter 'admin' or session ID"
+        placeholder="token"
         mb={4}
         value={userInput}
-        onChange={(e) => setUserInput(e.target.value)}
+        onChange={(e) => {setUserInput(e.target.value); setErrorMessage('')}}
       />
+      {/* this could be set as password so that it would be in * */}
       <Button onClick={handleFetchPolygons} mb={4}>
         Fetch Polygons
       </Button>
       {errorMessage && 
-           <Alert status="info" mt={4}>
+           <Alert status="error" mt={4}>
            <AlertIcon />
            <AlertDescription>
-           TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.        </AlertDescription>
-          
+        Please enter your admin token or sessionID
+        </AlertDescription>          
          </Alert>
       }
-     
-      {polygons.length > 0 && (
-        <>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Name</Th>
-                <Th>Coordinates</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {displayedPolygons.map((polygon) => (
-                <Tr key={polygon.id}>
-                  <Td>{polygon.name}</Td>
-                  <Td>{JSON.stringify(polygon.coordinates)}</Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-          <HStack mt={4} spacing={4}>
-            <Button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage <= 1}>
-              Previous
-            </Button>
-            <Button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage >= totalPages}>
-              Next
-            </Button>
-          </HStack>
-        </>
-      )}
-      {sharableLink && (
+
+{sharableLink && (
         <Box mt={4}>
             <Link href={sharableLink} isExternal >
             Sharable Link 
@@ -105,6 +84,38 @@ const PolygonViewer = ({ sessionId }) => {
      
         </Box>
       )}
+     
+     {polygons.length > 0 && (
+        <>
+          <Box overflowX="auto">
+            <Table variant="simple" width="100%">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th>Coordinates</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {displayedPolygons.map((polygon) => (
+                  <Tr key={polygon.id}>
+                    <Td>{polygon.name}</Td>
+                    <Td>{JSON.stringify(polygon.coordinates)}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+          <HStack mt={4} spacing={4}>
+            <Button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage <= 1}>
+              Previous
+            </Button>
+            <Button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage >= totalPages}>
+              Next
+            </Button>
+          </HStack>
+        </>
+      )}
+     
     </Box>
   );
 };

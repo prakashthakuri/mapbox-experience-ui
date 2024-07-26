@@ -41,7 +41,6 @@ const Polygon = () => {
 
   const [addPolygon] = useMutation(ADD_POLYGON, {
     onCompleted: (data) => {
-      console.log('Polygon added successfully:', data);
       setPolygons([...polygons, data.addPolygon]);
       setPolygonAreaName('');
     },
@@ -80,7 +79,6 @@ const Polygon = () => {
         const result = await getSessionId();
         if (result.data?.generateSessionId) {
           setSessionId(result.data.generateSessionId);
-          console.log(result.data.generateSessionId, 'sessionID');
         }
       } catch (error) {
         console.error('Error generating session ID:', error);
@@ -117,8 +115,8 @@ const Polygon = () => {
     mapRef.current = new Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-74.5, 40],
-      zoom: 9,
+      center: [-94.5, 40],
+      zoom: 5,
     });
 
     const draw = new MapboxDraw({
@@ -259,10 +257,9 @@ const Polygon = () => {
   };
 
 
-console.log(polygons, "pol")
   return (
-    <Box display='flex' ml={2} mr={2} style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: '100vh' }} onClick={handleCloseAlert}>
-      <Box flex='1' display='flex' flexDirection='column'>
+    <Box display='flex' flex='1' style={{ height: '100vh', width: '100%' }} onClick={handleCloseAlert}>
+      <Box flex='1' width='60%' display='flex' flexDirection='column'>
         <PolygonMap mapContainerRef={mapContainerRef} />
         <PolygonForm
           polygonAreaName={polygonAreaName}
@@ -290,29 +287,23 @@ console.log(polygons, "pol")
             <CloseButton position='absolute' top={2} right={2} onClick={handleCloseAlert} />
           </Alert>
         )}
-        
         <Box>
-        {polygons?.length > 0 && 
-          <Alert status="info" mt={4}>
-          <AlertIcon />
-          <AlertDescription>
-          TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.        </AlertDescription>
-         
-        </Alert>
-        }
-      
-
+          {polygons?.length > 0 && 
+            <Alert status="info" mt={4}>
+              <AlertIcon />
+              <AlertDescription>
+                TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.
+              </AlertDescription>
+            </Alert>
+          }
           <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName} handleShowPolygon={handleShowPolygon} />
-
         </Box>
-
-    
-
       </Box>
     
-      <Box flex='1'>
+      <Box width='40%' p={4}>
         <PolygonViewer sessionId={sessionId} />
       </Box>
+    
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -320,7 +311,7 @@ console.log(polygons, "pol")
           <ModalCloseButton />
           <ModalBody>Are you sure you want to update this polygon?</ModalBody>
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={handleConfirmUpdatePolygon}>
+            <Button colorScheme='blue' mr='3' onClick={handleConfirmUpdatePolygon}>
               OK
             </Button>
             <Button variant='ghost' onClick={onClose}>
@@ -332,5 +323,6 @@ console.log(polygons, "pol")
     </Box>
   );
 };
+
 
 export default Polygon;
