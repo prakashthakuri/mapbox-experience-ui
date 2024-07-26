@@ -27,6 +27,7 @@ import { GENERATE_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
 import PolygonMap from './PolygonMap.component';
 import PolygonForm from './PolygonForm.component';
 import PolygonList from './PolygonList.component';
+import PolygonViewer from './PolygonViewer.component';
 
 const Polygon = () => {
   const [polygons, setPolygons] = useState([]);
@@ -37,7 +38,6 @@ const Polygon = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [sessionId, setSessionId] = useState('');
-  const [token, setToken] = useState('');
 
   const [addPolygon] = useMutation(ADD_POLYGON, {
     onCompleted: (data) => {
@@ -67,15 +67,6 @@ const Polygon = () => {
     }
   });
 
-  const [getAllPolygons] = useLazyQuery(GET_POLYGONS, {
-    variables: { token },
-    onCompleted: (data) => {
-      setPolygons(data?.getPolygons);
-    },
-    onError: (error) => {
-      setErrorMessage('Failed to fetch polygons. ' + error.message);
-    }
-  });
   
   const [getSessionId] = useLazyQuery(GENERATE_SESSION_ID);
 
@@ -267,12 +258,10 @@ const Polygon = () => {
     setErrorMessage('');
   };
 
-  const handleFetchPolygons = () => {
-    getAllPolygons();
-  };
+
 console.log(polygons, "pol")
   return (
-    <Box display='flex' style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vh' }} onClick={handleCloseAlert}>
+    <Box display='flex' ml={2} mr={2} style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: '100vh' }} onClick={handleCloseAlert}>
       <Box flex='1' display='flex' flexDirection='column'>
         <PolygonMap mapContainerRef={mapContainerRef} />
         <PolygonForm
@@ -301,16 +290,35 @@ console.log(polygons, "pol")
             <CloseButton position='absolute' top={2} right={2} onClick={handleCloseAlert} />
           </Alert>
         )}
+        
+        <Box>
+        {polygons?.length > 0 && 
+          <Alert status="info" mt={4}>
+          <AlertIcon />
+          <AlertDescription>
+          TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.        </AlertDescription>
+         
+        </Alert>
+        }
+      
+
+          <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName} handleShowPolygon={handleShowPolygon} />
+
+        </Box>
+
+    
+
       </Box>
+    
       <Box flex='1'>
-        <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName} handleShowPolygon={handleShowPolygon} token={token} setToken={setToken} handleFetchPolygons={handleFetchPolygons} />
+        <PolygonViewer sessionId={sessionId} />
       </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Confirm Edit</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>Are you sure you want to update this polygon: {polygonAreaName}?</ModalBody>
+          <ModalBody>Are you sure you want to update this polygon?</ModalBody>
           <ModalFooter>
             <Button colorScheme='blue' mr={3} onClick={handleConfirmUpdatePolygon}>
               OK

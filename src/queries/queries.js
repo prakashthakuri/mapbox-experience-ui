@@ -17,15 +17,22 @@ export const GET_POLYGONS = gql `
     }
 }`
 
-export const GET_POLYGON_BY_SESSION_ID = gql `query GetPolygonBySession($sessionId: String!) {
-
-        GetPolygonBySession(sessionId: $sessionId){
-            ${polygonType}
-        }
-}`
+export const GET_POLYGON_BY_SESSION_ID = gql`
+  query getPolygonsBySession($session_id: String!) {
+    getPolygonsBySession(session_id: $session_id) {
+      id
+      name
+      coordinates
+      created_at
+      updated_at
+      session_id
+    }
+  }
+`;
 
 export const GENERATE_SESSION_ID = gql`
   query GenerateSessionId {
     generateSessionId
   }
 `;
+
