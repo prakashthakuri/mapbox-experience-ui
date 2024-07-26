@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLazyQuery } from '@apollo/client';
 import { Box, Button, Text, Table, Thead, Tbody, Tr, Th, Td, HStack, Input, Alert, AlertIcon, AlertDescription, Link } from '@chakra-ui/react';
 import { GET_POLYGON_BY_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
 import { displayPolygonOnMap } from '../../util';
+import mapboxgl, { Map } from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+
 
 const ITEMS_PER_PAGE = 4;
 
-const PolygonViewer = ({ sessionId, mapRef, drawRef }) => {
+const PolygonViewer = ({ sessionId, mapRef, drawRef, setPolygonViewMap }) => {
   const [polygons, setPolygons] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorMessage, setErrorMessage] = useState('')
@@ -38,25 +42,30 @@ const PolygonViewer = ({ sessionId, mapRef, drawRef }) => {
 
 
 
-    const handleFetchPolygons = () => {
-      if(userInput === ''){
-        setErrorMessage('Enter token or session ID')
-      }
-      else if (userInput.toLowerCase() === 'admin') {
-          getAllPolygons();
-        } 
-      else {
-        getPolygonsBySession({ variables: { session_id: userInput } });
-      }
-      };  
+
+  const handleFetchPolygons = () => {
+    setErrorMessage('');
+    setPolygons([]);
+    
+    if (userInput === '') {
+      setErrorMessage('Enter token or session ID');
+    } else if (userInput.toLowerCase() === 'admin') {
+      getAllPolygons();
+    } else {
+      getPolygonsBySession({ variables: { session_id: userInput } });
+    }
+  };
 
       const handlePolygonClick = (polygon) => {
-        setErrorMessageForShowingPolygon('')
+        setPolygonViewMap(true)
         try {
-          displayPolygonOnMap(mapRef, drawRef, polygon); // Use the utility function
+          setErrorMessageForShowingPolygon('');
+          displayPolygonOnMap(mapRef, drawRef, polygon);
+
         } catch (error) {
           setErrorMessageForShowingPolygon(error.message);
-        } }
+        }
+      };
 
   const totalPages = Math.ceil(polygons.length / ITEMS_PER_PAGE);
   const displayedPolygons = polygons.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);

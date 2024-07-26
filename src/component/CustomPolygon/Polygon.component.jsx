@@ -23,7 +23,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { ADD_POLYGON, UPDATE_POLYGON } from '../../queries/mutation';
-import { GENERATE_SESSION_ID, GET_POLYGONS } from '../../queries/queries';
+import { GENERATE_SESSION_ID } from '../../queries/queries';
 import PolygonMap from './PolygonMap.component';
 import PolygonForm from './PolygonForm.component';
 import PolygonList from './PolygonList.component';
@@ -38,6 +38,7 @@ const Polygon = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [sessionId, setSessionId] = useState('');
+  const [ polygonViewerMap, setPolygonViewMap] = useState(false);
 
   const [addPolygon] = useMutation(ADD_POLYGON, {
     onCompleted: (data) => {
@@ -109,6 +110,10 @@ const Polygon = () => {
     }
   };
 
+
+
+  
+
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
 
@@ -119,8 +124,10 @@ const Polygon = () => {
       zoom: 5,
     });
 
+    //  this is the last way i do it  oh doamn it, please workkk
+
     const draw = new MapboxDraw({
-      displayControlsDefault: false,
+      displayControlsDefault: true,
       controls: {
         polygon: true,
         trash: true,
@@ -128,20 +135,35 @@ const Polygon = () => {
       defaultMode: 'draw_polygon',
     });
 
-    drawRef.current = draw;
-    mapRef.current.addControl(draw);
+    const drawViewOnly = new MapboxDraw({
+      displayControlsDefault: false,
+      userProperties: false,
+      boxSelect: false,
+      touchEnabled: false,
+    });
+const finalDraw = polygonViewerMap ? drawViewOnly : draw;
+    drawRef.current =  finalDraw
+    mapRef.current.addControl(finalDraw);
 
-    mapRef.current.on('draw.create', updateArea);
-    mapRef.current.on('draw.delete', updateArea);
-    mapRef.current.on('draw.update', updateArea);
+    console.log(polygonViewerMap, "polygonMoa")
+    // console.log(finalDraw, "finalDr") // define expliciltysadjnaslkdnasm,as as
+    if(polygonViewerMap === false){
+      mapRef.current.on('draw.create', updateArea);
+      mapRef.current.on('draw.delete', updateArea);
+      mapRef.current.on('draw.update', updateArea);
+    }
+
 
     return () => {
-      mapRef.current.off('draw.create', updateArea);
-      mapRef.current.off('draw.delete', updateArea);
-      mapRef.current.off('draw.update', updateArea);
+      if(polygonViewerMap === false){
+        mapRef.current.off('draw.create', updateArea);
+        mapRef.current.off('draw.delete', updateArea);
+        mapRef.current.off('draw.update', updateArea);
+      }
+    
       mapRef.current.remove();
     };
-  }, []);
+  }, [polygonViewerMap]);
 
   const handleSavePolygon = async () => {
     if (!polygonAreaName) {
@@ -302,7 +324,7 @@ const Polygon = () => {
       </Box>
     
       <Box width='40%' p={4}>
-        <PolygonViewer sessionId={sessionId} mapRef={mapRef} drawRef={drawRef}  />
+        <PolygonViewer sessionId={sessionId} mapRef={mapRef} drawRef={drawRef} setPolygonViewMap={setPolygonViewMap}  />
       </Box>
     
       <Modal isOpen={isOpen} onClose={onClose}>
