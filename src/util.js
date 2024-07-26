@@ -15,6 +15,7 @@ export const displayPolygonOnMap = (mapRef, drawRef, polygon) => {
         coordinates: polygon.coordinates,
       },
       properties: {},
+      editable: false,
     });
 
     const bounds = new mapboxgl.LngLatBounds();

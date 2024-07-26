@@ -38,7 +38,7 @@ const Polygon = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [sessionId, setSessionId] = useState('');
-  const [ polygonViewerMap, setPolygonViewMap] = useState(false);
+  const [disableSaveButton , setDisableSaveButton] = useState(false);
 
   const [addPolygon] = useMutation(ADD_POLYGON, {
     onCompleted: (data) => {
@@ -53,7 +53,6 @@ const Polygon = () => {
 
   const [updatePolygon] = useMutation(UPDATE_POLYGON, {
     onCompleted: (data) => {
-      console.log('Polygon updated successfully:', data);
       const updatedPolygons = polygons.map(polygon => 
         polygon.id === data.updatePolygon.id ? data.updatePolygon : polygon
       );
@@ -116,7 +115,6 @@ const Polygon = () => {
 
   useEffect(() => {
     mapboxgl.accessToken = MAPBOX_KEY;
-
     mapRef.current = new Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -124,7 +122,6 @@ const Polygon = () => {
       zoom: 5,
     });
 
-    //  this is the last way i do it  oh doamn it, please workkk
 
     const draw = new MapboxDraw({
       displayControlsDefault: true,
@@ -134,36 +131,24 @@ const Polygon = () => {
       },
       defaultMode: 'draw_polygon',
     });
+    drawRef.current =  draw
+    mapRef.current.addControl(draw);
+    mapRef.current.on('draw.create', updateArea);
+    mapRef.current.on('draw.delete', updateArea);
+    mapRef.current.on('draw.update', updateArea);
 
-    const drawViewOnly = new MapboxDraw({
-      displayControlsDefault: false,
-      userProperties: false,
-      boxSelect: false,
-      touchEnabled: false,
-    });
-const finalDraw = polygonViewerMap ? drawViewOnly : draw;
-    drawRef.current =  finalDraw
-    mapRef.current.addControl(finalDraw);
-
-    console.log(polygonViewerMap, "polygonMoa")
-    // console.log(finalDraw, "finalDr") // define expliciltysadjnaslkdnasm,as as
-    if(polygonViewerMap === false){
-      mapRef.current.on('draw.create', updateArea);
-      mapRef.current.on('draw.delete', updateArea);
-      mapRef.current.on('draw.update', updateArea);
-    }
+  
+  
 
 
     return () => {
-      if(polygonViewerMap === false){
         mapRef.current.off('draw.create', updateArea);
         mapRef.current.off('draw.delete', updateArea);
         mapRef.current.off('draw.update', updateArea);
-      }
     
       mapRef.current.remove();
     };
-  }, [polygonViewerMap]);
+  }, []);
 
   const handleSavePolygon = async () => {
     if (!polygonAreaName) {
@@ -201,13 +186,9 @@ const finalDraw = polygonViewerMap ? drawViewOnly : draw;
   };
 
   const handleShowPolygon = (index) => {
-    console.log("clicked handle show POlugon", index)
-    if (selectedPolygon === index) {
-      setSelectedPolygon(null);
-      setPolygonAreaName('');
-      drawRef.current.deleteAll();
-      return;
-    }
+    setSelectedPolygon(null);
+    setPolygonAreaName('');
+    drawRef.current.deleteAll();
     const selectedFeature = polygons[index];
     if (!selectedFeature || !selectedFeature.coordinates) {
       setErrorMessage('Invalid polygon data');
@@ -292,6 +273,7 @@ const finalDraw = polygonViewerMap ? drawViewOnly : draw;
           handleClearPolygon={handleClearPolygon}
           selectedPolygon={selectedPolygon}
           handleUpdatePolygon={handleUpdatePolygon}
+          disableSaveButton= {disableSaveButton}
         />
         {clearAlert && (
           <Alert status='success'>
@@ -319,12 +301,12 @@ const finalDraw = polygonViewerMap ? drawViewOnly : draw;
 {               ` TO UPDATE: Select an item from the list to display details. Double-click the polygon to edit. Click 'Update' to save changes.`}              </AlertDescription>
             </Alert>
           }
-          <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName}  handleShowPolygon={handleShowPolygon} />
+          <PolygonList polygons={polygons} polygonArea={roundedArea} polygonName={polygonAreaName}  handleShowPolygon={handleShowPolygon}  setDisableSaveButton={setDisableSaveButton} />
         </Box>
       </Box>
     
       <Box width='40%' p={4}>
-        <PolygonViewer sessionId={sessionId} mapRef={mapRef} drawRef={drawRef} setPolygonViewMap={setPolygonViewMap}  />
+        <PolygonViewer sessionId={sessionId} mapRef={mapRef} drawRef={drawRef} setDisableSaveButton={setDisableSaveButton}  />
       </Box>
     
       <Modal isOpen={isOpen} onClose={onClose}>

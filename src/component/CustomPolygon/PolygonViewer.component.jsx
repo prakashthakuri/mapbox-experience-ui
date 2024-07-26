@@ -10,7 +10,7 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 const ITEMS_PER_PAGE = 4;
 
-const PolygonViewer = ({ sessionId, mapRef, drawRef, setPolygonViewMap }) => {
+const PolygonViewer = ({ sessionId, mapRef, drawRef,setDisableSaveButton }) => {
   const [polygons, setPolygons] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [errorMessage, setErrorMessage] = useState('')
@@ -57,8 +57,8 @@ const PolygonViewer = ({ sessionId, mapRef, drawRef, setPolygonViewMap }) => {
   };
 
       const handlePolygonClick = (polygon) => {
-        setPolygonViewMap(true)
         try {
+          setDisableSaveButton(true)
           setErrorMessageForShowingPolygon('');
           displayPolygonOnMap(mapRef, drawRef, polygon);
 
