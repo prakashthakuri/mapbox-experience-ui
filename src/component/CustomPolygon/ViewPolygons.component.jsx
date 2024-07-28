@@ -6,9 +6,9 @@ import { GET_POLYGON_BY_SESSION_ID } from '../../queries/queries';
 import { useLocation, Link } from 'react-router-dom';
 import { Box, Table, Thead, Tbody, Tr, Th, Td, Alert, AlertIcon, Text, AlertDescription } from '@chakra-ui/react';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
-import { MAPBOX_KEY } from '../../settings';
 import PolygonMap from './PolygonMap.component';
 import { displayPolygonOnMap } from '../../util';
+import { VITE_REACT_APP_MAPBOX_KEY } from '../../settings';
 
 const useQueryParams = () => {
   return new URLSearchParams(useLocation().search);
@@ -26,7 +26,7 @@ const ViewPolygons = () => {
   const mapRef = useRef(null);
 
   useEffect(() => {
-    mapboxgl.accessToken = MAPBOX_KEY;
+    mapboxgl.accessToken = VITE_REACT_APP_MAPBOX_KEY;
 
     const initializeMap = () => {
       const map = new mapboxgl.Map({

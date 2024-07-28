@@ -2,12 +2,12 @@ import React from 'react'
 
 import { useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { MAPBOX_KEY } from '../../settings';
+import { VITE_REACT_APP_MAPBOX_KEY } from '../../settings';
 
 const PolygonMap = ({ mapContainerRef }) => {
 
   useEffect(() => {
-    mapboxgl.accessToken = MAPBOX_KEY;
+    mapboxgl.accessToken = VITE_REACT_APP_MAPBOX_KEY;
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,

@@ -1,1 +1,3 @@
-export const MAPBOX_KEY =  'pk.2cTJrcHUyZmRlZGJ4byJ9.kJ_J2q37f6Rtd7ldF3TkQw'
+
+export const VITE_REACT_APP_MAPBOX_KEY =  import.meta.env.VITE_REACT_APP_MAPBOX_KEY || 'asdasdasdasd'
+export const  VITE_REACT_APP_GRAPHQL_URI = import.meta.env.VITE_REACT_APP_GRAPHQL_URI || 'http://localhost:8080'

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import mapboxgl, { Map } from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
-import { MAPBOX_KEY } from '../../settings';
 import {
   Box,
   Alert,
@@ -28,6 +27,7 @@ import PolygonMap from './PolygonMap.component';
 import PolygonForm from './PolygonForm.component';
 import PolygonList from './PolygonList.component';
 import PolygonViewer from './PolygonViewer.component';
+import { VITE_REACT_APP_MAPBOX_KEY } from '../../settings';
 
 const Polygon = () => {
   const [polygons, setPolygons] = useState([]);
@@ -115,7 +115,7 @@ const Polygon = () => {
   
 
   useEffect(() => {
-    mapboxgl.accessToken = MAPBOX_KEY;
+    mapboxgl.accessToken = VITE_REACT_APP_MAPBOX_KEY;
     mapRef.current = new Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/streets-v12',
